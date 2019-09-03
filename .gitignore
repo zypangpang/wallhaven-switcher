@@ -1,0 +1,5 @@
+venv/
+imgs/
+*.html
+*.jpg
+.idea/
