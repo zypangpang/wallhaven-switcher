@@ -10,6 +10,7 @@ height = 1440
 page = 1
 seed = Zypang
 current wallpaper = -1
+system = xfce
 
 [ZYPANG]
 wallpaper path = /home/zypang/Pictures/temp_wallpapers
@@ -19,5 +20,6 @@ purity = 100
 width = 1920
 height = 1080
 seed = ZypanG
-current wallpaper = 0
+current wallpaper = 3
+system = gnome
 

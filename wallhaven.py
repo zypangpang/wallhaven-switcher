@@ -4,7 +4,7 @@ import urllib.request
 from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
 import time
-import os,sys, string, random, subprocess
+import os, sys, string, random, subprocess,argparse
 
 THREAD_NUM=10
 IMG_THREAD_NUM=7
@@ -12,7 +12,7 @@ CONFIG_FILE='./configs.ini'
 SECTION_NAME='ZYPANG'
 ITEM_PER_PAGE=24
 SEED_LEN=6
-SYS_NAME='xfce'
+#SYS_NAME='xfce'
 
 
 configs=configparser.ConfigParser()
@@ -22,7 +22,19 @@ myconfigs=configs[SECTION_NAME]
 
 IMG_FOLDER_PATH=myconfigs['wallpaper path']
 SEED = myconfigs['seed']
+SYS_NAME = myconfigs['system']
 
+def parse_cmd_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f","--image-path",help="The folder path to the wallpaper image. If not given, use the path in config file")
+    parser.add_argument("-c","--config",help="The config file path. If not given, default is ~/.config/wallhaven/config")
+    parser.add_argument("--NSFW",help="Temporally download NSFW images",action="store_true")
+    args=parser.parse_args()
+    if args.NSFW:
+        print("NSFW")
+
+parse_cmd_args()
+exit(0)
 
 def update_configs(configs,file_path):
     with open(file_path,'w') as f:
@@ -61,7 +73,10 @@ def set_system_wallpaper(sys_name,wallpaper_path):
         xfcesetwallpaper.append(wallpaper_path)
         print(xfcesetwallpaper)
         subprocess.run(xfcesetwallpaper)
-
+    elif sys_name == 'gnome':
+        gnomesetwallpaper=f'gsettings set org.gnome.desktop.background picture-uri "file://{wallpaper_path}"'
+        subprocess.run(gnomesetwallpaper.split())
+    print('successfully set wallpaper '+wallpaper_path)
 
 def fetch_img_src(img):
     try:
@@ -94,7 +109,7 @@ def check_progress(results,rm=False):
     i=1
     j=0
     for img, error in results:
-        print_progress(24,i)
+        print_progress(len(results),i)
         i=i+1
         if error is not None:
             print(f" !{img['name']} error: {error}")
@@ -142,8 +157,6 @@ def get_new_wallpapers():
         myconfigs['page']='1'
     else:
         myconfigs['page']=str(page+1)
-
-
 
     fig_as=soup.select('figure .preview')
     fig_urls=[a['href'] for a in fig_as]
