@@ -11,6 +11,7 @@ BASE_URL = 'https://wallhaven.cc/api/v1/search'
 DEFAULT_CONFIG_STRING = '''[DEFAULT]
 # Folder to store images
 wallpaper path = {wallpaper_path}
+store wallpaper path = {store_wallpaper_path}
 # Categories: General Anime People
 categories = 110
 # Purity: SFW Sketchy NSFW
@@ -36,6 +37,7 @@ api key =
 
 [USER]
 wallpaper path = {wallpaper_path}
+store wallpaper path = {store_wallpaper_path}
 system = gnome
 '''
 
@@ -62,9 +64,12 @@ def get_config_file(create):
         return config_file
     elif create:
         image_folder=os.path.join(home,'WallhavenImgs/')
+        store_image_folder=os.path.join(home,'Pictures/Wallpapers')
         subprocess.run(['mkdir', '-p', image_folder])
+        subprocess.run(['mkdir', '-p', store_image_folder])
         subprocess.run(['mkdir', '-p', config_dir])
-        config_str=DEFAULT_CONFIG_STRING.format(wallpaper_path=image_folder)
+        config_str=DEFAULT_CONFIG_STRING.format(wallpaper_path=image_folder,
+                                                store_wallpaper_path=store_image_folder)
         with open(config_file,'w') as f:
             f.write(config_str)
         return config_file
@@ -100,9 +105,11 @@ def main():
 
     if args.generate:
         image_path=os.path.join(str(Path.home()),'WallhavenImgs/')
+        store_image_folder=os.path.join(str(Path.home()),'Pictures/Wallpapers')
         if args.image_path:
             image_path=args.image_path
-        print(DEFAULT_CONFIG_STRING.format(wallpaper_path=image_path))
+        print(DEFAULT_CONFIG_STRING.format(wallpaper_path=image_path,
+                                           store_wallpaper_path=store_image_folder))
         exit(0)
 
     if args.config:
@@ -123,7 +130,7 @@ def main():
                   f'You can change it if necessary\n'
                   f'You can also specify a custom config file with "-c".')
             exit(0)
-    if args.open_configs:
+    if args.open:
         subprocess.run(['vim', CONFIG_FILE])
         exit(0)
 
@@ -135,6 +142,7 @@ def main():
     except Exception as e:
         print("Config file format error or there is no section "+SECTION_NAME)
         exit(0)
+
 
     if args.reset:
         if args.reset == 0:
@@ -150,6 +158,18 @@ def main():
     # IMG_FOLDER_PATH=myconfigs['wallpaper path']
     # SEED = myconfigs['seed']
     # SYS_NAME = myconfigs['system']
+
+    if args.store:
+        (_,_,filenames)=next(os.walk(myconfigs['wallpaper path']))
+        cur_id=int(myconfigs['current wallpaper'])
+        if cur_id<0:
+            print("Please use the program to set wallpaper first.")
+            exit(0)
+        subprocess.run(['cp', os.path.join(myconfigs['wallpaper path'],filenames[cur_id]),
+                       os.path.join(myconfigs['store wallpaper path'],filenames[cur_id])])
+        print("Save current wallpaper in "+myconfigs['store wallpaper path'])
+        exit(0)
+
     if args.image_path:
         savecounter=False
         myconfigs['current wallpaper'] = '0'
@@ -239,11 +259,12 @@ def parse_cmd_args():
                                               "1 resets both current wallpaper and page counter.", type=int)
     parser.add_argument("-a", "--api_key", help="Your wallhaven account api key")
 
-    parser.add_argument("--open_configs", help="Open current config file", action="store_true")
+    parser.add_argument("--open", help="Open current config file", action="store_true")
     parser.add_argument("--clear", help="Clear current image folder", action="store_true")
     parser.add_argument("--random", help="Download images with a random seed and page 1.", action="store_true")
     parser.add_argument("--generate", help="Output default configs. Can be combined with '-f'.", action="store_true")
     parser.add_argument("--save", help="Save the command line configs in config file.", action="store_true")
+    parser.add_argument("--store", help="Store current wallpaper in the store wallpaper folder.", action="store_true")
     parser.add_argument("--noset", help="Do not set the wallpaper. Just dry run.", action="store_true")
     parser.add_argument("--NSFW", help="Temporarily download NSFW images", action="store_true")
     return parser.parse_args()
@@ -267,7 +288,8 @@ def set_wallpaper():
         print(f"Images in {img_folder_path} ran out.\n"
               f"Type y or Y to clear and download new.\n"
               f"Type anything else to go through again.")
-        user_input = input()
+        #user_input = input()
+        user_input ='Y' 
         if user_input == 'Y' or user_input == 'y':
             for file in filenames:
                 os.remove(os.path.join(img_folder_path, file))
