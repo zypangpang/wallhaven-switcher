@@ -1,7 +1,9 @@
 ## Wallhaven Switcher
 A python script tool to download wallhaven images and set them as your desktop wallpaper.
+
 **Linux only yet.** 
-Suports *xfce* and *gnome* until now.
+
+Supports *xfce* and *gnome* until now.
 
 ```
 usage: wallhaven.py [-h] [-f IMAGE_PATH] [-c CONFIG] [-t CATEGORIES]

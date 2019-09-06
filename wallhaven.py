@@ -245,7 +245,7 @@ def parse_cmd_args():
     parser.add_argument("--generate", help="Output default configs. Can be combined with '-f'.", action="store_true")
     parser.add_argument("--save", help="Save the command line configs in config file.", action="store_true")
     parser.add_argument("--noset", help="Do not set the wallpaper. Just dry run.", action="store_true")
-    parser.add_argument("--NSFW", help="Temporally download NSFW images", action="store_true")
+    parser.add_argument("--NSFW", help="Temporarily download NSFW images", action="store_true")
     return parser.parse_args()
 
 
