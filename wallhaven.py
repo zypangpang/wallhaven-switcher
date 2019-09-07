@@ -358,7 +358,7 @@ def fetch_img(img):
                     return img, 'Time out!'
                 timer.cancel()
             # print(f"{img['name']} done.")
-            return img, None
+        return img, None
     except Exception as e:
         return img, e
 
