@@ -40,6 +40,6 @@ optional arguments:
   --generate            Output default configs. Can be combined with '-f'.
   --save                Save the command line configs in config file.
   --noset               Do not set the wallpaper. Just dry run.
-  --NSFW                Temporally download NSFW images
+  --NSFW                Temporarily download NSFW images
 ```
 

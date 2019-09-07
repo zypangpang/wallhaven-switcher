@@ -6,6 +6,7 @@ from multiprocessing.pool import ThreadPool
 #import time
 import os, sys, string, random, subprocess, argparse, copy,json
 from pathlib import Path
+from threading import Timer
 
 BASE_URL = 'https://wallhaven.cc/api/v1/search'
 DEFAULT_CONFIG_STRING = '''[DEFAULT]
@@ -34,6 +35,7 @@ current wallpaper = -1
 system = xfce
 # Your api key
 api key = 
+cycle = 0
 
 [USER]
 wallpaper path = {wallpaper_path}
@@ -143,7 +145,6 @@ def main():
         print("Config file format error or there is no section "+SECTION_NAME)
         exit(0)
 
-
     if args.reset:
         if args.reset == 0:
             configs[SECTION_NAME]['current wallpaper'] = '0'
@@ -176,6 +177,9 @@ def main():
         #print("You have changed the image path, this time it will choose the first image from the folder as the "
         #      "wallpaper. If you want to change it permanently, please change the config file.")
         myconfigs['wallpaper path'] = args.image_path
+
+    if args.cycle:
+        myconfigs['cycle']='1'
 
     if args.clear:
         clear_folder(myconfigs['wallpaper path'])
@@ -266,6 +270,7 @@ def parse_cmd_args():
     parser.add_argument("--save", help="Save the command line configs in config file.", action="store_true")
     parser.add_argument("--store", help="Store current wallpaper in the store wallpaper folder.", action="store_true")
     parser.add_argument("--noset", help="Do not set the wallpaper. Just dry run.", action="store_true")
+    parser.add_argument("--cycle", help="Just cycle the folder without downloading new images.", action="store_true")
     parser.add_argument("--NSFW", help="Temporarily download NSFW images", action="store_true")
     return parser.parse_args()
 
@@ -282,18 +287,22 @@ def set_wallpaper():
     (_, _, filenames) = next(os.walk(img_folder_path))
     if not filenames:
         print(f'No files in {img_folder_path}.')
+        if myconfigs['cycle']=='1':
+            exit(0)
         get_new_wallpapers()
         cur_img = -1
     elif cur_img + 1 >= len(filenames):
-        print(f"Images in {img_folder_path} ran out.\n"
-              f"Type y or Y to clear and download new.\n"
-              f"Type anything else to go through again.")
+        print(f"Images in {img_folder_path} ran out.\n")
         #user_input = input()
-        user_input ='Y' 
-        if user_input == 'Y' or user_input == 'y':
+        #user_input ='Y'
+        #if user_input == 'Y' or user_input == 'y':
+        if myconfigs['cycle']=='0':
+            print("Now clear the folder and download new.\n")
             for file in filenames:
                 os.remove(os.path.join(img_folder_path, file))
             get_new_wallpapers()
+        else:
+            print("Now go through from the beginning again.\n")
         cur_img = -1
 
     (_, _, filenames) = next(os.walk(img_folder_path))
@@ -331,15 +340,25 @@ def fetch_img_src(img):
 
 
 def fetch_img(img):
+    def timer_handler(response):
+        response.close()
+
     img_folder_path = myconfigs['wallpaper path']
     try:
-        f = open(os.path.join(img_folder_path, img["id"]), 'wb')
-        req = urllib.request.Request(img['path'], headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req) as response:
-            f.write(response.read())
-        f.close()
-        # print(f"{img['name']} done.")
-        return img, None
+        with open(os.path.join(img_folder_path, img["id"]), 'wb') as f:
+            req = urllib.request.Request(img['path'], headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req) as response:
+                timer = Timer(60, timer_handler,[response])
+                timer.start()
+                try:
+                    f.write(response.read())
+                except:
+                    timer.cancel()
+                    f.close()
+                    return img, 'Time out!'
+                timer.cancel()
+            # print(f"{img['name']} done.")
+            return img, None
     except Exception as e:
         return img, e
 
@@ -351,7 +370,7 @@ def check_progress(maxval, results, rm=False):
     for img, error in results:
         print_progress(maxval, i)
         i = i + 1
-        if error is not None:
+        if error:
             print(f" !{img['id']} error: {error}")
             if rm:
                 try:
