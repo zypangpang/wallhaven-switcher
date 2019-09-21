@@ -51,6 +51,7 @@ SECTION_NAME = 'USER'
 #ITEM_PER_PAGE = 24
 SEED_LEN = 6
 # SYS_NAME='xfce'
+TIME_OUT=30
 
 myconfigs = None
 noset = False
@@ -189,6 +190,11 @@ def main():
     if args.wallpaper:
         savecounter=False
         myconfigs['current wallpaper']=str(args.wallpaper)
+    if args.prev:
+        prev_id=int(myconfigs['current wallpaper'])-2
+        if prev_id < -1:
+            prev_id = -1
+        myconfigs['current wallpaper'] = str(prev_id)
 
     if args.query:
         q=args.query
@@ -264,6 +270,7 @@ def parse_cmd_args():
     parser.add_argument("-a", "--api_key", help="Your wallhaven account api key")
 
     parser.add_argument("--open", help="Open current config file", action="store_true")
+    parser.add_argument("--prev", help="switch to last wallpaper", action="store_true")
     parser.add_argument("--clear", help="Clear current image folder", action="store_true")
     parser.add_argument("--random", help="Download images with a random seed and page 1.", action="store_true")
     parser.add_argument("--generate", help="Output default configs. Can be combined with '-f'.", action="store_true")
@@ -347,8 +354,8 @@ def fetch_img(img):
     try:
         with open(os.path.join(img_folder_path, img["id"]), 'wb') as f:
             req = urllib.request.Request(img['path'], headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req) as response:
-                timer = Timer(60, timer_handler,[response])
+            with urllib.request.urlopen(req,timeout=TIME_OUT) as response:
+                timer = Timer(TIME_OUT, timer_handler,[response])
                 timer.start()
                 try:
                     f.write(response.read())
