@@ -18,7 +18,7 @@ categories = 110
 # Purity: SFW Sketchy NSFW
 purity = 100
 # Sorting: date_added, relevance, random, views, favorites, toplist
-sorting = random
+sorting = toplist
 # Order: desc, asc
 order = desc
 # Image width
@@ -36,6 +36,10 @@ system = xfce
 # Your api key
 api key = 
 cycle = 0
+# hsetroot support
+hsetroot = 0
+hsetroot image option = -cover
+hsetroot tweak options = -tint red
 
 [USER]
 wallpaper path = {wallpaper_path}
@@ -234,6 +238,18 @@ def main():
         myconfigs['purity'] = '001'
         myconfigs['categories'] = '011'
 
+    if args.hsetroot:
+        myconfigs['hsetroot']='1'
+        if args.hse_img_option:
+            myconfigs['hsetroot image option']=args.hse_img_option
+        elif not myconfigs.get('hsetroot image option'):
+            print("No hsetroot image option. No hsetroot effect is added.")
+            myconfigs['hsetroot']='0'
+        if args.hse_tweak_options:
+            myconfigs['hsetroot tweak options']=args.hse_tweak_options
+        elif not myconfigs.get('hsetroot tweak options'):
+            myconfigs['hsetroot tweak options']=''
+
     if noset:
         print("Just download images and not change the wallpaper.")
         get_new_wallpapers()
@@ -279,6 +295,9 @@ def parse_cmd_args():
     parser.add_argument("--noset", help="Do not set the wallpaper. Just dry run.", action="store_true")
     parser.add_argument("--cycle", help="Just cycle the folder without downloading new images.", action="store_true")
     parser.add_argument("--NSFW", help="Temporarily download NSFW images", action="store_true")
+    parser.add_argument("--hsetroot", help="Enable hsetroot", action="store_true")
+    parser.add_argument("--hse_img_option", help="Hsetroot image option")
+    parser.add_argument("--hse_tweak_options", help="Hsetroot tweak options")
     return parser.parse_args()
 
 
@@ -317,15 +336,25 @@ def set_wallpaper():
     set_system_wallpaper(sys_name, os.path.join(img_folder_path, filenames[cur_img]))
     myconfigs['current wallpaper'] = str(cur_img)
 
+def hsetroot_process(wallpaper_path):
+    cur_path=os.path.join(myconfigs['wallpaper path'],'cur_wallpaper')
+    subprocess.run(['cp', wallpaper_path, cur_path])
+    command=f'hsetroot {myconfigs["hsetroot image option"]} {cur_path} {myconfigs["hsetroot tweak options"]} -write {cur_path}.png'
+    print(command)
+    subprocess.run(command.split())
+    return cur_path+'.png'
 
 def set_system_wallpaper(sys_name, wallpaper_path):
+    wallpaper=wallpaper_path
+    if myconfigs['hsetroot']=='1':
+        wallpaper=hsetroot_process(wallpaper_path)
     if sys_name == 'xfce':
         xfcesetwallpaper = 'xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitoreDP1/workspace0/last-image -s'.split()
-        xfcesetwallpaper.append(wallpaper_path)
+        xfcesetwallpaper.append(wallpaper)
         #print(xfcesetwallpaper)
         subprocess.run(xfcesetwallpaper)
     elif sys_name == 'gnome':
-        gnomesetwallpaper = f'gsettings set org.gnome.desktop.background picture-uri "file://{wallpaper_path}"'
+        gnomesetwallpaper = f'gsettings set org.gnome.desktop.background picture-uri "file://{wallpaper}"'
         subprocess.run(gnomesetwallpaper.split())
     print('successfully set wallpaper ' + wallpaper_path)
 
