@@ -5,6 +5,8 @@ A python script tool to download wallhaven images and set them as your desktop w
 
 Supports *xfce* and *gnome* until now.
 
+A config example is shown by `wallhaven --generate`.
+
 ```
 usage: wallhaven [-h] [-f IMAGE_PATH] [-c CONFIG] [-t CATEGORIES] [-x PURITY]
                  [-p PAGE] [-w WALLPAPER] [-q QUERY] [-r RESET] [-a API_KEY]
