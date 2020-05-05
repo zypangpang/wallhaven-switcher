@@ -62,13 +62,13 @@ For each subcommand, use -h to show help
         self.__do_download(args)
 
     def setwp(self):
-        parser = argparse.ArgumentParser(description='Set desktop wallpaper',
+        parser = argparse.ArgumentParser(description='Set next desktop wallpaper.',
                                          usage=f"{sys.argv[0]} setwp [<args>]")
         # parser.add_argument("-c", "--config",
         #                    help="The config file path. If not given, default is "
         #                         "~/.config/wallhaven/config.ini")
         parser.add_argument("-w", "--wallpaper", help="Wallpaper index in the folder.", type=int)
-        parser.add_argument("-p", "--prev", help="switch to last wallpaper", action="store_true")
+        parser.add_argument("-p", "--prev", help="set previous wallpaper", action="store_true")
         parser.add_argument("-c", "--curr", help="reset the current wallpaper", action="store_true")
         parser.add_argument("--hse_img_option", help="Hsetroot image option")
         parser.add_argument("--hse_tweak_options", help="Hsetroot tweak options")
@@ -86,9 +86,12 @@ For each subcommand, use -h to show help
         parser.add_argument("-s", "--save", help="Store current wallpaper in the store wallpaper folder.",
                             action="store_true")
         parser.add_argument("-c", "--clear", help="Clear current image folder", action="store_true")
-        args = parser.parse_args(sys.argv[2:])
 
-        self.__do_wallpaper(args)
+        if len(sys.argv)<=2:
+            print("Nothing to do")
+        else:
+            args = parser.parse_args(sys.argv[2:])
+            self.__do_wallpaper(args)
 
     def config(self):
         parser = argparse.ArgumentParser(
@@ -103,8 +106,11 @@ For each subcommand, use -h to show help
                                                   "1 resets both current wallpaper and page counter.", type=int)
         # parser.add_argument("--save", help="Save the command line configs in config file.", action="store_true")
 
-        args = parser.parse_args(sys.argv[2:])
-        self.__do_config(args)
+        if len(sys.argv)<=2:
+            print("Nothing to do")
+        else:
+            args = parser.parse_args(sys.argv[2:])
+            self.__do_config(args)
 
     def __do_config(self, args):
         if args.open:
