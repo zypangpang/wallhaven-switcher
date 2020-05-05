@@ -116,13 +116,12 @@ For each subcommand, use -h to show help
             print(DEFAULT_CONFIG_STRING.format(wallpaper_path=image_path,
                                                store_wallpaper_path=store_image_folder))
         elif args.reset is not None:
-            (configs, section) = read_config_file(self.config_file, SECTION_NAME)
             if args.reset == 0:
-                section['current wallpaper'] = '0'
+                self.section['current wallpaper'] = '0'
             if args.reset == 1:
-                section['current wallpaper'] = '0'
-                section['page'] = '1'
-            update_configs(configs, self.config_file)
+                self.section['current wallpaper'] = '0'
+                self.section['page'] = '1'
+            update_configs(self.configs, self.config_file)
 
     def __do_download(self, args):
         myconfigs = self.section
@@ -182,12 +181,12 @@ For each subcommand, use -h to show help
         myconfigs = self.section
         if args.wallpaper:
             myconfigs['current wallpaper'] = str(args.wallpaper)
-        if args.prev:
+        elif args.prev:
             prev_id = int(myconfigs['current wallpaper']) - 2
             if prev_id < -1:
                 prev_id = -1
             myconfigs['current wallpaper'] = str(prev_id)
-        if args.curr:
+        elif args.curr:
             prev_id = int(myconfigs['current wallpaper']) - 1
             if prev_id < -1:
                 prev_id = -1
@@ -215,7 +214,7 @@ For each subcommand, use -h to show help
                             os.path.join(myconfigs['store wallpaper path'], filenames[cur_id])])
             print("Save current wallpaper in " + myconfigs['store wallpaper path'])
             exit(0)
-        if args.clear:
+        elif args.clear:
             clear_folder(myconfigs['wallpaper path'])
 
     def __config_set(self):
