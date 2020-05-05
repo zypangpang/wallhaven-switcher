@@ -8,6 +8,7 @@ from utils import *
 # from bs4 import BeautifulSoup
 # import time
 
+
 class Wallhaven:
     def __init__(self):
         parser = argparse.ArgumentParser(
@@ -165,16 +166,14 @@ For each subcommand, use -h to show help
             myconfigs['categories'] = '011'
 
         img_folder_path = myconfigs['wallpaper path']
-        print(f"Clear wallpapers in {img_folder_path}? Y/N")
-        user_input = input()
-        if user_input == 'Y' or user_input == 'y':
-            clear_folder(img_folder_path)
+        clear_folder(img_folder_path)
         print(f"Download new wallpapers to {img_folder_path}? Y/N")
         user_input = input()
         if user_input == 'Y' or user_input == 'y':
             print("Downloading...")
             self.__get_new_wallpapers()
 
+        myconfigs['current wallpaper'] = '-1'
         # Only update config without any extra options
         if (len(sys.argv) == 2):
             update_configs(self.configs, self.config_file)

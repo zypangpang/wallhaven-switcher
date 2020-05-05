@@ -47,7 +47,7 @@ def update_configs(configs, file_path):
 
 
 def clear_folder(folder_path):
-    print("Are you sure you want to clear " + folder_path + ' ?\n Type y to confirm.')
+    print("Are you sure you want to clear " + folder_path + '? Y/N')
     ok = input()
     if ok != 'y' and ok != 'Y':
         return

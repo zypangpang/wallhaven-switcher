@@ -3,3 +3,4 @@ imgs/
 *.html
 *.jpg
 .idea/
+__pycache__/
