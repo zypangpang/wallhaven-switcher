@@ -59,7 +59,6 @@ def clear_folder(folder_path):
         print("Error occurred. Check the path and its contents.")
     else:
         print("Clear done.")
-    exit(0)
 
 
 def check_progress(maxval, results, myconfigs, rm=False):
